@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
+
 const QuestionModifier = () => {
   const [modifyData, setModifyData] = useState({
     questionId: "",
@@ -26,23 +28,41 @@ const QuestionModifier = () => {
 
     try {
       const websocketKey = `key-${Date.now()}`;
-      // Websocket connection will be implemented here when URL is provided
-      const mockBody = {
-        action: "changeQuestion",
-        key: websocketKey,
-        questionId: modifyData.questionId,
-        questionnaireId: modifyData.questionnaireId,
-        levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
-        instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
-        directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",
-        typeChange: modifyData.modificationType === "type" ? modifyData.typeChange : "",
+      const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
+
+      ws.onopen = () => {
+        const body = {
+          action: "changeQuestion",
+          key: websocketKey,
+          questionId: modifyData.questionId,
+          questionnaireId: modifyData.questionnaireId,
+          levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
+          instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
+          directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",
+          typeChange: modifyData.modificationType === "type" ? modifyData.typeChange : "",
+        };
+
+        ws.send(JSON.stringify(body));
+        toast.success("WebSocket conectado com sucesso!");
       };
 
-      toast.info("Websocket connection will be implemented when URL is provided");
-      console.log("Request body:", mockBody);
+      ws.onmessage = (event) => {
+        const response = JSON.parse(event.data);
+        toast.info(`Resposta recebida: ${JSON.stringify(response)}`);
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        toast.error("Erro na conexão WebSocket");
+      };
+
+      ws.onclose = () => {
+        setIsProcessing(false);
+        toast.info("Conexão WebSocket fechada");
+      };
+
     } catch (error) {
-      toast.error("Failed to connect to websocket");
-    } finally {
+      toast.error("Falha ao conectar ao WebSocket");
       setIsProcessing(false);
     }
   };

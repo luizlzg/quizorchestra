@@ -1,11 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+
+const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionnaireForm = () => {
   const [formData, setFormData] = useState({
@@ -25,26 +27,50 @@ const QuestionnaireForm = () => {
     
     try {
       const websocketKey = `key-${Date.now()}`;
-      // Websocket connection will be implemented here when URL is provided
-      const mockBody = {
-        action: "generateQuestionnaire",
-        sendJustStatus: false,
-        key: websocketKey,
-        ...formData,
-        modulesList: [],
-        contextId: 37960,
-        applicationId: 1,
-        tenantId: 1,
-        institutionId: 1,
-        userId: 1,
-        languageId: "pt-br",
+      const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
+
+      ws.onopen = () => {
+        const body = {
+          action: "generateQuestionnaire",
+          sendJustStatus: false,
+          key: websocketKey,
+          ...formData,
+          modulesList: [],
+          contextId: 37960,
+          applicationId: 1,
+          tenantId: 1,
+          institutionId: 1,
+          userId: 1,
+          languageId: "pt-br",
+        };
+
+        ws.send(JSON.stringify(body));
+        toast.success("WebSocket conectado com sucesso!");
       };
-      
-      toast.info("Websocket connection will be implemented when URL is provided");
-      console.log("Request body:", mockBody);
+
+      ws.onmessage = (event) => {
+        const response = JSON.parse(event.data);
+        if (response.action === "partialQuestionGenerated") {
+          toast.info(`Questão gerada: ${response.question}`);
+        } else if (response.action === "questionnaireDetails") {
+          toast.info("Detalhes do questionário recebidos");
+        } else if (response.action === "questionnaireGenerated") {
+          toast.success("Questionário completo gerado!");
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        toast.error("Erro na conexão WebSocket");
+      };
+
+      ws.onclose = () => {
+        setIsConnecting(false);
+        toast.info("Conexão WebSocket fechada");
+      };
+
     } catch (error) {
-      toast.error("Failed to connect to websocket");
-    } finally {
+      toast.error("Falha ao conectar ao WebSocket");
       setIsConnecting(false);
     }
   };
