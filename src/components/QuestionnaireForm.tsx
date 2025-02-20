@@ -56,12 +56,15 @@ const QuestionnaireForm = () => {
           toast.info("Detalhes do questionário recebidos");
         } else if (response.action === "questionnaireGenerated") {
           toast.success("Questionário completo gerado!");
+          setIsConnecting(false); // Reset connecting state when complete
+          ws.close(); // Close the connection after completion
         }
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         toast.error("Erro na conexão WebSocket");
+        setIsConnecting(false); // Reset connecting state on error
       };
 
       ws.onclose = () => {
