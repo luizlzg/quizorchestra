@@ -30,6 +30,12 @@ const QuestionModifier = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!modifyData.questionId || !modifyData.questionnaireId) {
+      toast.error("Por favor, selecione uma questão e um questionário");
+      return;
+    }
+    
     setIsProcessing(true);
     setModifiedQuestion(null);
 
@@ -38,15 +44,16 @@ const QuestionModifier = () => {
       const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
 
       ws.onopen = () => {
+        // Garantindo que todos os campos do schema estejam presentes
         const body = {
           action: "changeQuestion",
           key: websocketKey,
           questionId: modifyData.questionId,
           questionnaireId: modifyData.questionnaireId,
-          levelChange: modifyData.levelChange,
-          instructionChange: modifyData.instructionChange,
-          directLevelChange: modifyData.directLevelChange,
-          typeChange: modifyData.typeChange,
+          levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
+          instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
+          directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",
+          typeChange: modifyData.modificationType === "type" ? modifyData.typeChange : "",
         };
 
         ws.send(JSON.stringify(body));

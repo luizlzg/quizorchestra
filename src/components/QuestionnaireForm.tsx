@@ -10,7 +10,16 @@ import { Textarea } from "@/components/ui/textarea";
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionnaireForm = () => {
-  const { selectedTheme, setSelectedTheme, setQuestionnaireId, setQuestions } = useQuestionnaireStore();
+  const { 
+    selectedTheme, 
+    setSelectedTheme, 
+    setQuestionnaireId, 
+    setQuestions,
+    questionnaireDetails,
+    setQuestionnaireDetails,
+    generatedQuestions,
+    setGeneratedQuestions
+  } = useQuestionnaireStore();
   
   const [formData, setFormData] = useState({
     numberOfQuestions: 3,
@@ -21,8 +30,6 @@ const QuestionnaireForm = () => {
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
-  const [questionnaireDetails, setQuestionnaireDetails] = useState<any>(null);
-  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +83,7 @@ const QuestionnaireForm = () => {
 
         if (response.action === "partialQuestionGenerated") {
           const newQuestion = response.partialResponse.response;
-          setGeneratedQuestions((prev) => {
+          setGeneratedQuestions(prev => {
             const updated = [...prev, newQuestion];
             setQuestions(updated);
             return updated;

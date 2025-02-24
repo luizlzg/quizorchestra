@@ -11,18 +11,26 @@ interface QuestionnaireStore {
   selectedTheme: Theme | null;
   questionnaireId: string | null;
   questions: any[];
+  questionnaireDetails: any | null;
+  generatedQuestions: any[];
   setSelectedTheme: (theme: Theme | null) => void;
   setQuestionnaireId: (id: string | null) => void;
   setQuestions: (questions: any[]) => void;
+  setQuestionnaireDetails: (details: any | null) => void;
+  setGeneratedQuestions: (questions: any[]) => void;
 }
 
 export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   selectedTheme: null,
   questionnaireId: null,
   questions: [],
+  questionnaireDetails: null,
+  generatedQuestions: [],
   setSelectedTheme: (theme) => set({ selectedTheme: theme }),
   setQuestionnaireId: (id) => set({ questionnaireId: id }),
   setQuestions: (questions) => set({ questions }),
+  setQuestionnaireDetails: (details) => set({ questionnaireDetails: details }),
+  setGeneratedQuestions: (questions) => set({ generatedQuestions: questions }),
 }));
 
 export const themes: Theme[] = [
