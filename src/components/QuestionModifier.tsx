@@ -44,23 +44,39 @@ const QuestionModifier = () => {
       const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
 
       ws.onopen = () => {
-        const difficulty = modifyData.modificationType === "level" ? modifyData.levelChange : 
-                         modifyData.modificationType === "direct" ? 
-                           (modifyData.directLevelChange === "easier" ? "easy" : 
-                            modifyData.directLevelChange === "harder" ? "hard" : "") : "";
+        // Prepare data according to modification type
+        let levelChange = "";
+        let directLevelChange = "";
+        let typeChange = "";
+        let instructionChange = "";
+
+        switch (modifyData.modificationType) {
+          case "level":
+            levelChange = modifyData.levelChange;
+            break;
+          case "direct":
+            directLevelChange = modifyData.directLevelChange;
+            break;
+          case "type":
+            typeChange = modifyData.typeChange;
+            break;
+          case "instruction":
+            instructionChange = modifyData.instructionChange;
+            break;
+        }
 
         const body = {
           action: "changeQuestion",
           key: websocketKey,
           questionId: modifyData.questionId,
           questionnaireId: modifyData.questionnaireId,
-          difficulty: difficulty,
-          levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
-          instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
-          directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",
-          typeChange: modifyData.modificationType === "type" ? modifyData.typeChange : "",
+          levelChange,
+          instructionChange,
+          directLevelChange,
+          typeChange,
         };
 
+        console.log("Sending request:", body);
         ws.send(JSON.stringify(body));
         toast.success("WebSocket conectado com sucesso!");
       };
@@ -135,7 +151,16 @@ const QuestionModifier = () => {
             <label className="text-sm font-medium">Modification Type</label>
             <Select
               value={modifyData.modificationType}
-              onValueChange={(value: ModificationType) => setModifyData(prev => ({ ...prev, modificationType: value }))}
+              onValueChange={(value: ModificationType) => {
+                setModifyData(prev => ({
+                  ...prev,
+                  modificationType: value,
+                  levelChange: "",
+                  instructionChange: "",
+                  directLevelChange: "",
+                  typeChange: ""
+                }));
+              }}
             >
               <SelectTrigger>
                 <SelectValue />
