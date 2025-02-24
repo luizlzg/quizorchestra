@@ -83,11 +83,9 @@ const QuestionnaireForm = () => {
 
         if (response.action === "partialQuestionGenerated") {
           const newQuestion = response.partialResponse.response;
-          setGeneratedQuestions(prev => {
-            const updated = [...prev, newQuestion];
-            setQuestions(updated);
-            return updated;
-          });
+          const updatedQuestions = [...generatedQuestions, newQuestion];
+          setGeneratedQuestions(updatedQuestions);
+          setQuestions(updatedQuestions);
           toast.info(`Questão ${generatedQuestions.length + 1} gerada`);
         } else if (response.action === "questionnaireDetails") {
           setQuestionnaireDetails(response.questionnaireDetails);
