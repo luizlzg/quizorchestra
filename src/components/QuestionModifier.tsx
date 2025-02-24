@@ -44,12 +44,17 @@ const QuestionModifier = () => {
       const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
 
       ws.onopen = () => {
-        // Garantindo que todos os campos do schema estejam presentes
+        const difficulty = modifyData.modificationType === "level" ? modifyData.levelChange : 
+                         modifyData.modificationType === "direct" ? 
+                           (modifyData.directLevelChange === "easier" ? "easy" : 
+                            modifyData.directLevelChange === "harder" ? "hard" : "") : "";
+
         const body = {
           action: "changeQuestion",
           key: websocketKey,
           questionId: modifyData.questionId,
           questionnaireId: modifyData.questionnaireId,
+          difficulty: difficulty,
           levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
           instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
           directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",

@@ -30,6 +30,7 @@ const QuestionnaireForm = () => {
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
+  const [localQuestions, setLocalQuestions] = useState<any[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +45,7 @@ const QuestionnaireForm = () => {
     setGeneratedQuestions([]);
     setQuestions([]);
     setQuestionnaireId(null);
+    setLocalQuestions([]);
     
     try {
       const websocketKey = `key-${Date.now()}`;
@@ -83,10 +85,13 @@ const QuestionnaireForm = () => {
 
         if (response.action === "partialQuestionGenerated") {
           const newQuestion = response.partialResponse.response;
-          const updatedQuestions = [...generatedQuestions, newQuestion];
-          setGeneratedQuestions(updatedQuestions);
-          setQuestions(updatedQuestions);
-          toast.info(`Questão ${generatedQuestions.length + 1} gerada`);
+          setLocalQuestions(prev => {
+            const updated = [...prev, newQuestion];
+            setGeneratedQuestions(updated);
+            setQuestions(updated);
+            return updated;
+          });
+          toast.info(`Questão ${localQuestions.length + 1} gerada`);
         } else if (response.action === "questionnaireDetails") {
           setQuestionnaireDetails(response.questionnaireDetails);
           setQuestionnaireId(response.questionnaireDetails.questionnaireId);
