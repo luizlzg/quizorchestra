@@ -6,13 +6,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionModifier = () => {
+  const { questionnaireId, questions } = useQuestionnaireStore();
+  
   const [modifyData, setModifyData] = useState({
     questionId: "",
-    questionnaireId: "",
+    questionnaireId: questionnaireId || "",
     modificationType: "instruction",
     instructionChange: "",
     levelChange: "medium",
@@ -86,11 +89,21 @@ const QuestionModifier = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="text-sm font-medium">Question ID</label>
-              <Input
+              <Select
                 value={modifyData.questionId}
-                onChange={(e) => setModifyData(prev => ({ ...prev, questionId: e.target.value }))}
-                placeholder="Enter question ID"
-              />
+                onValueChange={(value) => setModifyData(prev => ({ ...prev, questionId: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma questão" />
+                </SelectTrigger>
+                <SelectContent>
+                  {questions.map((question, index) => (
+                    <SelectItem key={question.id || index} value={question.id || `temp-${index}`}>
+                      Questão {index + 1}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="form-group">
@@ -99,6 +112,7 @@ const QuestionModifier = () => {
                 value={modifyData.questionnaireId}
                 onChange={(e) => setModifyData(prev => ({ ...prev, questionnaireId: e.target.value }))}
                 placeholder="Enter questionnaire ID"
+                readOnly
               />
             </div>
           </div>

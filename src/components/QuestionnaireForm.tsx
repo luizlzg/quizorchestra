@@ -3,30 +3,39 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useQuestionnaireStore, themes } from "@/store/questionnaireStore";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionnaireForm = () => {
+  const { selectedTheme, setSelectedTheme, setQuestionnaireId, setQuestions } = useQuestionnaireStore();
+  
   const [formData, setFormData] = useState({
     numberOfQuestions: 3,
     numberOfAlternatives: 5,
     questionType: "multiple choice",
     difficulty: "medium",
-    professorInput: "",
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [questionnaireDetails, setQuestionnaireDetails] = useState<any>(null);
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedTheme) {
+      toast.error("Por favor, selecione um tema");
+      return;
+    }
+
     setIsConnecting(true);
     setQuestionnaireDetails(null);
+    setGeneratedQuestions([]);
     setQuestions([]);
+    setQuestionnaireId(null);
     
     try {
       const websocketKey = `key-${Date.now()}`;
@@ -38,8 +47,13 @@ const QuestionnaireForm = () => {
           sendJustStatus: false,
           key: websocketKey,
           ...formData,
-          modulesList: [],
-          contextId: "37960", // Changed to string as per schema
+          modulesList: [
+            {
+              moduleName: selectedTheme.moduleName,
+              contentCode: selectedTheme.contentCode,
+            }
+          ],
+          contextId: selectedTheme.contextId,
           applicationId: 1,
           tenantId: 1,
           institutionId: 1,
@@ -57,10 +71,12 @@ const QuestionnaireForm = () => {
 
         if (response.action === "partialQuestionGenerated") {
           const newQuestion = response.partialResponse.response;
+          setGeneratedQuestions(prev => [...prev, newQuestion]);
           setQuestions(prev => [...prev, newQuestion]);
-          toast.info(`Questão ${questions.length + 1} gerada`);
+          toast.info(`Questão ${generatedQuestions.length + 1} gerada`);
         } else if (response.action === "questionnaireDetails") {
           setQuestionnaireDetails(response.questionnaireDetails);
+          setQuestionnaireId(response.questionnaireDetails.questionnaireId);
           toast.info("Detalhes do questionário recebidos");
         } else if (response.action === "questionnaireGenerated") {
           toast.success("Questionário completo gerado!");
@@ -90,6 +106,25 @@ const QuestionnaireForm = () => {
     <div className="space-y-8">
       <Card className="questionnaire-card">
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="form-group">
+            <label className="text-sm font-medium">Tema do Questionário</label>
+            <Select
+              value={selectedTheme?.contentCode || ""}
+              onValueChange={(value) => setSelectedTheme(themes.find(t => t.contentCode === value) || null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um tema" />
+              </SelectTrigger>
+              <SelectContent>
+                {themes.map((theme) => (
+                  <SelectItem key={theme.contentCode} value={theme.contentCode}>
+                    {theme.moduleName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="text-sm font-medium">Number of Questions</label>
@@ -149,16 +184,6 @@ const QuestionnaireForm = () => {
             </div>
           </div>
 
-          <div className="form-group">
-            <label className="text-sm font-medium">Professor Instructions</label>
-            <Textarea
-              value={formData.professorInput}
-              onChange={(e) => setFormData(prev => ({ ...prev, professorInput: e.target.value }))}
-              placeholder="Enter instructions for the questionnaire..."
-              className="min-h-[100px]"
-            />
-          </div>
-
           <Button
             type="submit"
             className="w-full"
@@ -179,9 +204,9 @@ const QuestionnaireForm = () => {
         </Card>
       )}
 
-      {questions.length > 0 && (
+      {generatedQuestions.length > 0 && (
         <div className="space-y-6">
-          {questions.map((question, index) => (
+          {generatedQuestions.map((question, index) => (
             <Card key={index} className="p-6 space-y-4">
               <h3 className="font-medium">Questão {index + 1}</h3>
               <p>{question.content}</p>
