@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useQuestionnaireStore, themes } from "@/store/questionnaireStore";
+import { Textarea } from "@/components/ui/textarea";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
@@ -15,8 +15,9 @@ const QuestionnaireForm = () => {
   const [formData, setFormData] = useState({
     numberOfQuestions: 3,
     numberOfAlternatives: 5,
-    questionType: "multiple choice",
-    difficulty: "medium",
+    questionType: "multiple choice" as "multiple choice" | "assertion-reason",
+    difficulty: "medium" as "easy" | "medium" | "hard",
+    professorInput: "", // Campo obrigatório que estava faltando
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
@@ -44,9 +45,13 @@ const QuestionnaireForm = () => {
       ws.onopen = () => {
         const body = {
           action: "generateQuestionnaire",
-          sendJustStatus: false,
           key: websocketKey,
-          ...formData,
+          sendJustStatus: false,
+          numberOfQuestions: formData.numberOfQuestions,
+          numberOfAlternatives: formData.numberOfAlternatives,
+          difficulty: formData.difficulty,
+          questionType: formData.questionType,
+          professorInput: formData.professorInput,
           modulesList: [
             {
               moduleName: selectedTheme.moduleName,
@@ -58,7 +63,7 @@ const QuestionnaireForm = () => {
           tenantId: 1,
           institutionId: 1,
           userId: 1,
-          languageId: "pt-br",
+          languageId: "pt-br" as "pt-br" | "en" | "es",
         };
 
         ws.send(JSON.stringify(body));
@@ -71,8 +76,11 @@ const QuestionnaireForm = () => {
 
         if (response.action === "partialQuestionGenerated") {
           const newQuestion = response.partialResponse.response;
-          setGeneratedQuestions(prev => [...prev, newQuestion]);
-          setQuestions(prev => [...prev, newQuestion]);
+          setGeneratedQuestions((prev) => {
+            const updated = [...prev, newQuestion];
+            setQuestions(updated);
+            return updated;
+          });
           toast.info(`Questão ${generatedQuestions.length + 1} gerada`);
         } else if (response.action === "questionnaireDetails") {
           setQuestionnaireDetails(response.questionnaireDetails);
@@ -182,6 +190,16 @@ const QuestionnaireForm = () => {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="text-sm font-medium">Instruções do Professor</label>
+            <Textarea
+              value={formData.professorInput}
+              onChange={(e) => setFormData(prev => ({ ...prev, professorInput: e.target.value }))}
+              placeholder="Digite instruções adicionais para a geração do questionário..."
+              className="min-h-[100px]"
+            />
           </div>
 
           <Button

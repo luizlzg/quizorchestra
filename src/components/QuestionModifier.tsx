@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +15,10 @@ const QuestionModifier = () => {
   const [modifyData, setModifyData] = useState({
     questionId: "",
     questionnaireId: questionnaireId || "",
-    modificationType: "instruction",
+    levelChange: "" as "easy" | "medium" | "hard" | "",
     instructionChange: "",
-    levelChange: "medium",
-    directLevelChange: "easier",
-    typeChange: "multiple choice",
+    directLevelChange: "" as "easier" | "harder" | "",
+    typeChange: "" as "multiple choice" | "assertion-reason" | "",
   });
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -41,10 +39,10 @@ const QuestionModifier = () => {
           key: websocketKey,
           questionId: modifyData.questionId,
           questionnaireId: modifyData.questionnaireId,
-          levelChange: modifyData.modificationType === "level" ? modifyData.levelChange : "",
-          instructionChange: modifyData.modificationType === "instruction" ? modifyData.instructionChange : "",
-          directLevelChange: modifyData.modificationType === "direct" ? modifyData.directLevelChange : "",
-          typeChange: modifyData.modificationType === "type" ? modifyData.typeChange : "",
+          levelChange: modifyData.levelChange,
+          instructionChange: modifyData.instructionChange,
+          directLevelChange: modifyData.directLevelChange,
+          typeChange: modifyData.typeChange,
         };
 
         ws.send(JSON.stringify(body));
