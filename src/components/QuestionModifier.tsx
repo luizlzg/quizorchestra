@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +10,15 @@ import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
+type ModificationType = "instruction" | "level" | "direct" | "type";
+
 const QuestionModifier = () => {
   const { questionnaireId, questions } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
     questionId: "",
     questionnaireId: questionnaireId || "",
+    modificationType: "instruction" as ModificationType,
     levelChange: "" as "easy" | "medium" | "hard" | "",
     instructionChange: "",
     directLevelChange: "" as "easier" | "harder" | "",
@@ -119,7 +123,7 @@ const QuestionModifier = () => {
             <label className="text-sm font-medium">Modification Type</label>
             <Select
               value={modifyData.modificationType}
-              onValueChange={(value) => setModifyData(prev => ({ ...prev, modificationType: value }))}
+              onValueChange={(value: ModificationType) => setModifyData(prev => ({ ...prev, modificationType: value }))}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -150,7 +154,8 @@ const QuestionModifier = () => {
               <label className="text-sm font-medium">Desired Level</label>
               <Select
                 value={modifyData.levelChange}
-                onValueChange={(value) => setModifyData(prev => ({ ...prev, levelChange: value }))}
+                onValueChange={(value: "easy" | "medium" | "hard" | "") => 
+                  setModifyData(prev => ({ ...prev, levelChange: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -169,7 +174,8 @@ const QuestionModifier = () => {
               <label className="text-sm font-medium">Difficulty Change</label>
               <Select
                 value={modifyData.directLevelChange}
-                onValueChange={(value) => setModifyData(prev => ({ ...prev, directLevelChange: value }))}
+                onValueChange={(value: "easier" | "harder" | "") => 
+                  setModifyData(prev => ({ ...prev, directLevelChange: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -187,7 +193,8 @@ const QuestionModifier = () => {
               <label className="text-sm font-medium">New Question Type</label>
               <Select
                 value={modifyData.typeChange}
-                onValueChange={(value) => setModifyData(prev => ({ ...prev, typeChange: value }))}
+                onValueChange={(value: "multiple choice" | "assertion-reason" | "") => 
+                  setModifyData(prev => ({ ...prev, typeChange: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />

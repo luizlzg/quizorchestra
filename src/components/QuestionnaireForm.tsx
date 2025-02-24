@@ -17,7 +17,7 @@ const QuestionnaireForm = () => {
     numberOfAlternatives: 5,
     questionType: "multiple choice" as "multiple choice" | "assertion-reason",
     difficulty: "medium" as "easy" | "medium" | "hard",
-    professorInput: "", // Campo obrigatório que estava faltando
+    professorInput: "",
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
@@ -162,7 +162,8 @@ const QuestionnaireForm = () => {
               <label className="text-sm font-medium">Question Type</label>
               <Select
                 value={formData.questionType}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, questionType: value }))}
+                onValueChange={(value: "multiple choice" | "assertion-reason") => 
+                  setFormData(prev => ({ ...prev, questionType: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -178,7 +179,8 @@ const QuestionnaireForm = () => {
               <label className="text-sm font-medium">Difficulty</label>
               <Select
                 value={formData.difficulty}
-                onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}
+                onValueChange={(value: "easy" | "medium" | "hard") => 
+                  setFormData(prev => ({ ...prev, difficulty: value }))}
               >
                 <SelectTrigger>
                   <SelectValue />
