@@ -274,12 +274,12 @@ const QuestionModifier = () => {
               </div>
             ))}
           </div>
-          {modifiedQuestion.generalFeedback && (
-            <div className="mt-4 p-4 bg-secondary/30 rounded">
-              <p className="font-medium">Feedback Geral:</p>
-              <p className="text-sm text-gray-600">{modifiedQuestion.generalFeedback}</p>
-            </div>
-          )}
+          <div className="mt-4 p-4 bg-secondary/30 rounded">
+            <p className="font-medium">Feedback da alternativa correta:</p>
+            <p className="text-sm text-gray-600">
+              {modifiedQuestion.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
+            </p>
+          </div>
         </Card>
       )}
     </div>

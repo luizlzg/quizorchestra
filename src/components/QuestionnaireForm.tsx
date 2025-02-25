@@ -238,7 +238,10 @@ const QuestionnaireForm = () => {
         <div className="space-y-6">
           {generatedQuestions.map((question, index) => (
             <Card key={index} className="p-6 space-y-4">
-              <h3 className="font-medium">Questão {index + 1}</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="font-medium">Questão {index + 1}</h3>
+                <span className="text-sm text-muted-foreground">ID: {question.id}</span>
+              </div>
               <p>{question.content}</p>
               <div className="space-y-2">
                 {question.options?.map((option: any, optIndex: number) => (
@@ -249,8 +252,10 @@ const QuestionnaireForm = () => {
                 ))}
               </div>
               <div className="mt-4 p-4 bg-secondary/30 rounded">
-                <p className="font-medium">Feedback:</p>
-                <p className="text-sm text-gray-600">{question.feedback}</p>
+                <p className="font-medium">Feedback da alternativa correta:</p>
+                <p className="text-sm text-gray-600">
+                  {question.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
+                </p>
               </div>
             </Card>
           ))}
