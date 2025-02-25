@@ -237,10 +237,14 @@ const QuestionnaireForm = () => {
       {generatedQuestions.length > 0 && (
         <div className="space-y-6">
           {generatedQuestions.map((question, index) => (
-            <Card key={index} className="p-6 space-y-4">
+            <Card key={question.questionId || index} className="p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Questão {index + 1}</h3>
-                <span className="text-sm text-muted-foreground">ID: {question.questionId}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground bg-secondary/30 px-2 py-1 rounded">
+                    ID: {question.questionId}
+                  </span>
+                </div>
               </div>
               <p>{question.content}</p>
               <div className="space-y-2">
