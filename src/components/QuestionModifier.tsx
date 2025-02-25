@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +31,7 @@ const QuestionModifier = () => {
     e.preventDefault();
     
     // Encontrar a questão selecionada para pegar o ID real
-    const selectedQuestion = questions.find((q, index) => q.id === modifyData.questionId || `temp-${index}` === modifyData.questionId);
+    const selectedQuestion = questions.find((q) => q.id === modifyData.questionId);
     
     if (!selectedQuestion?.id) {
       toast.error("ID da questão não encontrado");
@@ -75,7 +74,7 @@ const QuestionModifier = () => {
         const body = {
           action: "changeQuestion",
           key: websocketKey,
-          questionId: selectedQuestion.id, // Usando o ID real da questão
+          questionId: selectedQuestion.id,
           questionnaireId: modifyData.questionnaireId,
           levelChange,
           instructionChange,
@@ -129,10 +128,7 @@ const QuestionModifier = () => {
               <Select
                 value={modifyData.questionId}
                 onValueChange={(value) => {
-                  const selectedQuestion = questions.find((q, index) => q.id === value || `temp-${index}` === value);
-                  if (selectedQuestion?.id) {
-                    setModifyData(prev => ({ ...prev, questionId: selectedQuestion.id }));
-                  }
+                  setModifyData(prev => ({ ...prev, questionId: value }));
                 }}
               >
                 <SelectTrigger>
@@ -140,7 +136,7 @@ const QuestionModifier = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {questions.map((question, index) => (
-                    <SelectItem key={question.id || index} value={question.id || `temp-${index}`}>
+                    <SelectItem key={question.id} value={question.id}>
                       Questão {index + 1}
                     </SelectItem>
                   ))}
@@ -278,10 +274,12 @@ const QuestionModifier = () => {
               </div>
             ))}
           </div>
-          <div className="mt-4 p-4 bg-secondary/30 rounded">
-            <p className="font-medium">Feedback:</p>
-            <p className="text-sm text-gray-600">{modifiedQuestion.feedback}</p>
-          </div>
+          {modifiedQuestion.generalFeedback && (
+            <div className="mt-4 p-4 bg-secondary/30 rounded">
+              <p className="font-medium">Feedback Geral:</p>
+              <p className="text-sm text-gray-600">{modifiedQuestion.generalFeedback}</p>
+            </div>
+          )}
         </Card>
       )}
     </div>
