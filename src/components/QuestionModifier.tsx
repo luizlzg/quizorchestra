@@ -124,11 +124,23 @@ const QuestionModifier = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="text-sm font-medium">Question ID</label>
-              <Input
+              <Select
                 value={modifyData.questionId}
-                onChange={(e) => setModifyData(prev => ({ ...prev, questionId: e.target.value }))}
-                placeholder="Digite o ID da questão"
-              />
+                onValueChange={(value) => {
+                  setModifyData(prev => ({ ...prev, questionId: value }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma questão" />
+                </SelectTrigger>
+                <SelectContent>
+                  {questions.map((question, index) => (
+                    <SelectItem key={question.questionId || index} value={question.questionId}>
+                      Questão {index + 1} - ID: {question.questionId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="form-group">
