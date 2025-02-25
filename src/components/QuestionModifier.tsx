@@ -30,10 +30,9 @@ const QuestionModifier = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Encontrar a questão selecionada para pegar o ID real
-    const selectedQuestion = questions.find((q) => q.id === modifyData.questionId);
+    const selectedQuestion = questions.find((q) => q.questionId === modifyData.questionId);
     
-    if (!selectedQuestion?.id) {
+    if (!selectedQuestion?.questionId) {
       toast.error("ID da questão não encontrado");
       return;
     }
@@ -74,7 +73,7 @@ const QuestionModifier = () => {
         const body = {
           action: "changeQuestion",
           key: websocketKey,
-          questionId: selectedQuestion.id,
+          questionId: selectedQuestion.questionId,
           questionnaireId: modifyData.questionnaireId,
           levelChange,
           instructionChange,
@@ -136,8 +135,8 @@ const QuestionModifier = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {questions.map((question, index) => (
-                    <SelectItem key={question.id} value={question.id}>
-                      Questão {index + 1}
+                    <SelectItem key={question.questionId || index} value={question.questionId}>
+                      Questão {index + 1} - ID: {question.questionId}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -268,14 +267,26 @@ const QuestionModifier = () => {
           <p>{modifiedQuestion.content}</p>
           <div className="space-y-2">
             {modifiedQuestion.options?.map((option: any, index: number) => (
-              <div key={index} className="flex items-start gap-2 p-2 rounded bg-secondary/50">
-                <div className="w-6">{String.fromCharCode(65 + index)})</div>
+              <div 
+                key={index} 
+                className={`flex items-start gap-2 p-2 rounded ${
+                  option.correct ? 'bg-green-100 dark:bg-green-900/20' : 'bg-secondary/50'
+                }`}
+              >
+                <div className="w-6">
+                  {String.fromCharCode(65 + index)}
+                  {option.correct && (
+                    <span className="ml-1 text-green-600 dark:text-green-400">✓</span>
+                  )}
+                </div>
                 <p>{option.text}</p>
               </div>
             ))}
           </div>
           <div className="mt-4 p-4 bg-secondary/30 rounded">
-            <p className="font-medium">Feedback da alternativa correta:</p>
+            <p className="font-medium">Feedback da alternativa correta ({
+              String.fromCharCode(65 + modifiedQuestion.options?.findIndex((opt: any) => opt.correct))
+            }):</p>
             <p className="text-sm text-gray-600">
               {modifiedQuestion.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
             </p>
