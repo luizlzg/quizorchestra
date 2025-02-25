@@ -90,8 +90,6 @@ const QuestionModifier = () => {
         const response = JSON.parse(event.data);
         if (response.action === "questionChanged") {
           const newQuestion = response.questionChangeResponse.response;
-          // Atualiza a questão globalmente no Zustand:
-          updateQuestion(newQuestion);
           setModifiedQuestion(newQuestion);
           toast.success("Questão modificada com sucesso!");
           setIsProcessing(false);
