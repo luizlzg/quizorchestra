@@ -31,8 +31,16 @@ const QuestionModifier = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!modifyData.questionId || !modifyData.questionnaireId) {
-      toast.error("Por favor, selecione uma questão e um questionário");
+    // Encontrar a questão selecionada para pegar o ID real
+    const selectedQuestion = questions.find((q, index) => q.id === modifyData.questionId || `temp-${index}` === modifyData.questionId);
+    
+    if (!selectedQuestion?.id) {
+      toast.error("ID da questão não encontrado");
+      return;
+    }
+    
+    if (!modifyData.questionnaireId) {
+      toast.error("ID do questionário não encontrado");
       return;
     }
     
@@ -44,7 +52,6 @@ const QuestionModifier = () => {
       const ws = new WebSocket(`${WEBSOCKET_URL}?key=${websocketKey}`);
 
       ws.onopen = () => {
-        // Prepare data according to modification type
         let levelChange = "";
         let directLevelChange = "";
         let typeChange = "";
@@ -68,7 +75,7 @@ const QuestionModifier = () => {
         const body = {
           action: "changeQuestion",
           key: websocketKey,
-          questionId: modifyData.questionId,
+          questionId: selectedQuestion.id, // Usando o ID real da questão
           questionnaireId: modifyData.questionnaireId,
           levelChange,
           instructionChange,
@@ -121,7 +128,12 @@ const QuestionModifier = () => {
               <label className="text-sm font-medium">Question ID</label>
               <Select
                 value={modifyData.questionId}
-                onValueChange={(value) => setModifyData(prev => ({ ...prev, questionId: value }))}
+                onValueChange={(value) => {
+                  const selectedQuestion = questions.find((q, index) => q.id === value || `temp-${index}` === value);
+                  if (selectedQuestion?.id) {
+                    setModifyData(prev => ({ ...prev, questionId: selectedQuestion.id }));
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma questão" />
