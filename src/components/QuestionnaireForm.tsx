@@ -84,7 +84,9 @@ const QuestionnaireForm = () => {
         console.log("WebSocket response:", response);
 
         if (response.action === "partialQuestionGenerated") {
+          console.log('Resposta:', response.partialResponse.response);
           const newQuestion = response.partialResponse.response;
+          console.log('New question:', newQuestion);
           setLocalQuestions(prev => {
             const updated = [...prev, newQuestion];
             setGeneratedQuestions(updated);
