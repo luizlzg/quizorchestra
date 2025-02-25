@@ -12,7 +12,7 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
-  const {questionnaireId, questions, updateQuestion } = useQuestionnaireStore();
+  const { questionnaireId, questions } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
     questionId: "",
