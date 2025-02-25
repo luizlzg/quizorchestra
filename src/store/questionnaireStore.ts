@@ -18,7 +18,9 @@ interface QuestionnaireStore {
   setQuestions: (questions: any[]) => void;
   setQuestionnaireDetails: (details: any | null) => void;
   setGeneratedQuestions: (questions: any[]) => void;
+  updateQuestion: (updatedQuestion: any) => void;
 }
+
 
 export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   selectedTheme: null,
@@ -31,7 +33,14 @@ export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   setQuestions: (questions) => set({ questions }),
   setQuestionnaireDetails: (details) => set({ questionnaireDetails: details }),
   setGeneratedQuestions: (questions) => set({ generatedQuestions: questions }),
+  updateQuestion: (updatedQuestion) =>
+    set((state) => ({
+      questions: state.questions.map((q) =>
+        q.questionId === updatedQuestion.questionId ? updatedQuestion : q
+      ),
+    })),
 }));
+
 
 export const themes: Theme[] = [
   { moduleName: "Balanço de entropia", contentCode: "97434", contextId: "39428" },
