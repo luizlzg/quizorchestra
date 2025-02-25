@@ -88,17 +88,17 @@ const QuestionModifier = () => {
 
       ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
-        console.log("WebSocket response:", response);
-
         if (response.action === "questionChanged") {
-          setModifiedQuestion(response.questionChangeResponse.response);
+          const newQuestion = response.questionChangeResponse.response;
+          // Atualiza a questão globalmente no Zustand:
+          updateQuestion(newQuestion);
+          setModifiedQuestion(newQuestion);
           toast.success("Questão modificada com sucesso!");
           setIsProcessing(false);
           ws.close();
-        } else if (response.action === "questionChangedSuccess") {
-          toast.success("Processo finalizado com sucesso!");
         }
       };
+
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
