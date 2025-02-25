@@ -12,8 +12,8 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
-  const { questionnaireId, questions } = useQuestionnaireStore();
-
+  const {questionnaireId, questions, updateQuestion } = useQuestionnaireStore();
+  
   const [modifyData, setModifyData] = useState({
     questionId: "",
     questionnaireId: questionnaireId || "",
@@ -29,19 +29,19 @@ const QuestionModifier = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     const selectedQuestion = questions.find((q) => q.questionId === modifyData.questionId);
-
+    
     if (!selectedQuestion?.questionId) {
       toast.error("ID da questão não encontrado");
       return;
     }
-
+    
     if (!modifyData.questionnaireId) {
       toast.error("ID do questionário não encontrado");
       return;
     }
-
+    
     setIsProcessing(true);
     setModifiedQuestion(null);
 
@@ -88,17 +88,17 @@ const QuestionModifier = () => {
 
       ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
-        console.log("WebSocket response:", response);
-
         if (response.action === "questionChanged") {
-          setModifiedQuestion(response.questionChangeResponse.response);
+          const newQuestion = response.questionChangeResponse.response;
+          // Atualiza a questão globalmente no Zustand:
+          updateQuestion(newQuestion);
+          setModifiedQuestion(newQuestion);
           toast.success("Questão modificada com sucesso!");
           setIsProcessing(false);
           ws.close();
-        } else if (response.action === "questionChangedSuccess") {
-          toast.success("Processo finalizado com sucesso!");
         }
       };
+
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
@@ -124,23 +124,23 @@ const QuestionModifier = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="text-sm font-medium">Question ID</label>
-              <Input
+              <Select
                 value={modifyData.questionId}
-                onChange={(e) => setModifyData(prev => ({ ...prev, questionId: e.target.value }))}
-                placeholder="Digite o ID da questão"
-              />
-
-
-
-
-
-
-
-
-
-
-
-
+                onValueChange={(value) => {
+                  setModifyData(prev => ({ ...prev, questionId: value }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma questão" />
+                </SelectTrigger>
+                <SelectContent>
+                  {questions.map((question, index) => (
+                    <SelectItem key={question.questionId || index} value={question.questionId}>
+                      Questão {index + 1} - ID: {question.questionId}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="form-group">
