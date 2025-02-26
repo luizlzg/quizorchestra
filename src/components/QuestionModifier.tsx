@@ -144,7 +144,6 @@ const QuestionModifier = () => {
                 value={modifyData.questionnaireId}
                 onChange={(e) => setModifyData(prev => ({ ...prev, questionnaireId: e.target.value }))}
                 placeholder="Enter questionnaire ID"
-                readOnly
               />
             </div>
           </div>
