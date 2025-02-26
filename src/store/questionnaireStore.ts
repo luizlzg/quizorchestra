@@ -12,12 +12,10 @@ interface QuestionnaireStore {
   questionnaireId: string | null;
   questions: any[];
   questionnaireDetails: any | null;
-  generatedQuestions: any[];
   setSelectedTheme: (theme: Theme | null) => void;
   setQuestionnaireId: (id: string | null) => void;
   setQuestions: (questions: any[]) => void;
   setQuestionnaireDetails: (details: any | null) => void;
-  setGeneratedQuestions: (questions: any[]) => void;
   updateQuestion: (updatedQuestion: any) => void;
 }
 
@@ -26,25 +24,16 @@ export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   questionnaireId: null,
   questions: [],
   questionnaireDetails: null,
-  generatedQuestions: [],
   setSelectedTheme: (theme) => set({ selectedTheme: theme }),
   setQuestionnaireId: (id) => set({ questionnaireId: id }),
   setQuestions: (questions) => set({ questions }),
   setQuestionnaireDetails: (details) => set({ questionnaireDetails: details }),
-  setGeneratedQuestions: (questions) => set({ generatedQuestions: questions }),
   updateQuestion: (updatedQuestion) =>
-    set((state) => {
-      const updatedQuestions = state.questions.map((q) =>
+    set((state) => ({
+      questions: state.questions.map((q) =>
         q.questionId === updatedQuestion.questionId ? updatedQuestion : q
-      );
-      const updatedGeneratedQuestions = state.generatedQuestions.map((q) =>
-        q.questionId === updatedQuestion.questionId ? updatedQuestion : q
-      );
-      return {
-        questions: updatedQuestions,
-        generatedQuestions: updatedGeneratedQuestions,
-      };
-    }),
+      ),
+    })),
 }));
 
 export const themes: Theme[] = [

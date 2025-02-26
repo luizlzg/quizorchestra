@@ -18,8 +18,6 @@ const QuestionnaireForm = () => {
     setQuestions,
     questionnaireDetails,
     setQuestionnaireDetails,
-    generatedQuestions,
-    setGeneratedQuestions,
     questions
   } = useQuestionnaireStore();
   
@@ -34,13 +32,6 @@ const QuestionnaireForm = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [localQuestions, setLocalQuestions] = useState<any[]>([]);
 
-  // Quando o componente montar, garantir que as questões estejam sincronizadas
-  useEffect(() => {
-    if (questions.length > 0) {
-      setGeneratedQuestions(questions);
-    }
-  }, [questions, setGeneratedQuestions]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -51,9 +42,6 @@ const QuestionnaireForm = () => {
 
     setIsConnecting(true);
     setQuestionnaireDetails(null);
-    setGeneratedQuestions([]);
-    setQuestions([]);
-    setQuestionnaireId(null);
     setLocalQuestions([]);
     
     try {
@@ -98,7 +86,6 @@ const QuestionnaireForm = () => {
           console.log('New question:', newQuestion);
           setLocalQuestions(prev => {
             const updated = [...prev, newQuestion];
-            setGeneratedQuestions(updated);
             setQuestions(updated);
             return updated;
           });
@@ -132,7 +119,7 @@ const QuestionnaireForm = () => {
   };
 
   // Usar as questões do estado global para renderização
-  const questionsToDisplay = questions.length > 0 ? questions : generatedQuestions;
+  const questionsToDisplay = questions;
 
   return (
     <div className="space-y-8">
