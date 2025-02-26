@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +19,8 @@ const QuestionnaireForm = () => {
     questionnaireDetails,
     setQuestionnaireDetails,
     generatedQuestions,
-    setGeneratedQuestions
+    setGeneratedQuestions,
+    questions
   } = useQuestionnaireStore();
   
   const [formData, setFormData] = useState({
@@ -31,6 +33,13 @@ const QuestionnaireForm = () => {
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [localQuestions, setLocalQuestions] = useState<any[]>([]);
+
+  // Quando o componente montar, garantir que as questões estejam sincronizadas
+  useEffect(() => {
+    if (questions.length > 0) {
+      setGeneratedQuestions(questions);
+    }
+  }, [questions, setGeneratedQuestions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +130,9 @@ const QuestionnaireForm = () => {
       setIsConnecting(false);
     }
   };
+
+  // Usar as questões do estado global para renderização
+  const questionsToDisplay = questions.length > 0 ? questions : generatedQuestions;
 
   return (
     <div className="space-y-8">
@@ -236,9 +248,9 @@ const QuestionnaireForm = () => {
         </Card>
       )}
 
-      {generatedQuestions.length > 0 && (
+      {questionsToDisplay.length > 0 && (
         <div className="space-y-6">
-          {generatedQuestions.map((question, index) => (
+          {questionsToDisplay.map((question, index) => (
             <Card key={question.questionId || index} className="p-6 space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-medium">Questão {index + 1}</h3>
