@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
-  const {questionnaireId, questions, updateQuestion } = useQuestionnaireStore();
+  const { questionnaireId, questions, updateQuestion } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
     questionId: "",
@@ -30,9 +31,7 @@ const QuestionModifier = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const selectedQuestion = questions.find((q) => q.questionId === modifyData.questionId);
-    
-    if (!selectedQuestion?.questionId) {
+    if (!modifyData.questionId) {
       toast.error("ID da questão não encontrado");
       return;
     }
@@ -73,7 +72,7 @@ const QuestionModifier = () => {
         const body = {
           action: "changeQuestion",
           key: websocketKey,
-          questionId: selectedQuestion.questionId,
+          questionId: modifyData.questionId,
           questionnaireId: modifyData.questionnaireId,
           levelChange,
           instructionChange,
@@ -88,9 +87,11 @@ const QuestionModifier = () => {
 
       ws.onmessage = (event) => {
         const response = JSON.parse(event.data);
+        console.log("WebSocket response:", response);
+        
         if (response.action === "questionChanged") {
           const newQuestion = response.questionChangeResponse.response;
-          // Atualiza a questão globalmente no Zustand:
+          console.log("Nova questão:", newQuestion);
           updateQuestion(newQuestion);
           setModifiedQuestion(newQuestion);
           toast.success("Questão modificada com sucesso!");
@@ -98,7 +99,6 @@ const QuestionModifier = () => {
           ws.close();
         }
       };
-
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
@@ -124,23 +124,11 @@ const QuestionModifier = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
               <label className="text-sm font-medium">Question ID</label>
-              <Select
+              <Input
                 value={modifyData.questionId}
-                onValueChange={(value) => {
-                  setModifyData(prev => ({ ...prev, questionId: value }));
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma questão" />
-                </SelectTrigger>
-                <SelectContent>
-                  {questions.map((question, index) => (
-                    <SelectItem key={question.questionId || index} value={question.questionId}>
-                      Questão {index + 1} - ID: {question.questionId}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(e) => setModifyData(prev => ({ ...prev, questionId: e.target.value }))}
+                placeholder="Digite o ID da questão"
+              />
             </div>
 
             <div className="form-group">

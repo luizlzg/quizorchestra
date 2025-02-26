@@ -33,14 +33,18 @@ export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   setQuestionnaireDetails: (details) => set({ questionnaireDetails: details }),
   setGeneratedQuestions: (questions) => set({ generatedQuestions: questions }),
   updateQuestion: (updatedQuestion) =>
-    set((state) => ({
-      questions: state.questions.map((q) =>
+    set((state) => {
+      const updatedQuestions = state.questions.map((q) =>
         q.questionId === updatedQuestion.questionId ? updatedQuestion : q
-      ),
-      generatedQuestions: state.generatedQuestions.map((q) =>
+      );
+      const updatedGeneratedQuestions = state.generatedQuestions.map((q) =>
         q.questionId === updatedQuestion.questionId ? updatedQuestion : q
-      ),
-    })),
+      );
+      return {
+        questions: updatedQuestions,
+        generatedQuestions: updatedGeneratedQuestions,
+      };
+    }),
 }));
 
 export const themes: Theme[] = [
