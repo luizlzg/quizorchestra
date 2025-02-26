@@ -21,7 +21,6 @@ interface QuestionnaireStore {
   updateQuestion: (updatedQuestion: any) => void;
 }
 
-
 export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
   selectedTheme: null,
   questionnaireId: null,
@@ -38,9 +37,11 @@ export const useQuestionnaireStore = create<QuestionnaireStore>((set) => ({
       questions: state.questions.map((q) =>
         q.questionId === updatedQuestion.questionId ? updatedQuestion : q
       ),
+      generatedQuestions: state.generatedQuestions.map((q) =>
+        q.questionId === updatedQuestion.questionId ? updatedQuestion : q
+      ),
     })),
 }));
-
 
 export const themes: Theme[] = [
   { moduleName: "Balanço de entropia", contentCode: "97434", contextId: "39428" },
