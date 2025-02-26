@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,7 +12,7 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
-  const { questionnaireId, questions, updateQuestion } = useQuestionnaireStore();
+  const { questionnaireId, updateQuestion, getQuestionById } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
     questionId: "",
@@ -27,6 +26,15 @@ const QuestionModifier = () => {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [modifiedQuestion, setModifiedQuestion] = useState<any>(null);
+
+  useEffect(() => {
+    if (modifyData.questionId) {
+      const question = getQuestionById(modifyData.questionId);
+      if (question) {
+        setModifiedQuestion(question);
+      }
+    }
+  }, [modifyData.questionId, getQuestionById]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,7 +50,6 @@ const QuestionModifier = () => {
     }
     
     setIsProcessing(true);
-    setModifiedQuestion(null);
 
     try {
       const websocketKey = `key-${Date.now()}`;
