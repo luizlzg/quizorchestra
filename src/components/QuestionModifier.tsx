@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +27,6 @@ const QuestionModifier = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [modifiedQuestion, setModifiedQuestion] = useState<any>(null);
 
-  // Carrega a questão modificada quando o ID é inserido
   useEffect(() => {
     if (modifyData.questionId) {
       const question = getQuestionById(modifyData.questionId);
@@ -37,20 +35,6 @@ const QuestionModifier = () => {
       }
     }
   }, [modifyData.questionId, getQuestionById]);
-
-  // Função para obter a cor de acordo com a dificuldade
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case 'easy':
-        return 'bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-400';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-400';
-      case 'hard':
-        return 'bg-red-100 text-red-800 border-red-300 dark:bg-red-900/30 dark:text-red-400';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300';
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,60 +128,80 @@ const QuestionModifier = () => {
     <div className="space-y-8">
       <Card className="questionnaire-card">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
-              <label className="text-sm font-medium">ID da Questão</label>
+              <label className="text-sm font-medium">Question ID</label>
               <Input
-                type="text"
                 value={modifyData.questionId}
                 onChange={(e) => setModifyData(prev => ({ ...prev, questionId: e.target.value }))}
                 placeholder="Digite o ID da questão"
               />
             </div>
+
             <div className="form-group">
-              <label className="text-sm font-medium">ID do Questionário</label>
+              <label className="text-sm font-medium">Questionnaire ID</label>
               <Input
-                type="text"
                 value={modifyData.questionnaireId}
                 onChange={(e) => setModifyData(prev => ({ ...prev, questionnaireId: e.target.value }))}
-                placeholder="Digite o ID do questionário"
+                placeholder="Enter questionnaire ID"
               />
             </div>
           </div>
 
           <div className="form-group">
-            <label className="text-sm font-medium">Tipo de Modificação</label>
+            <label className="text-sm font-medium">Modification Type</label>
             <Select
               value={modifyData.modificationType}
-              onValueChange={(value: ModificationType) => setModifyData(prev => ({ ...prev, modificationType: value }))}
+              onValueChange={(value: ModificationType) => {
+                setModifyData(prev => ({
+                  ...prev,
+                  modificationType: value,
+                  levelChange: "",
+                  instructionChange: "",
+                  directLevelChange: "",
+                  typeChange: ""
+                }));
+              }}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o tipo de modificação" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="instruction">Instruções</SelectItem>
-                <SelectItem value="level">Nível de Dificuldade</SelectItem>
-                <SelectItem value="direct">Diretamente mais fácil/difícil</SelectItem>
-                <SelectItem value="type">Tipo de Questão</SelectItem>
+                <SelectItem value="instruction">Custom Instruction</SelectItem>
+                <SelectItem value="level">Specific Level</SelectItem>
+                <SelectItem value="direct">Easier/Harder</SelectItem>
+                <SelectItem value="type">Change Type</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
+          {modifyData.modificationType === "instruction" && (
+            <div className="form-group">
+              <label className="text-sm font-medium">Modification Instructions</label>
+              <Textarea
+                value={modifyData.instructionChange}
+                onChange={(e) => setModifyData(prev => ({ ...prev, instructionChange: e.target.value }))}
+                placeholder="Enter modification instructions..."
+                className="min-h-[100px]"
+              />
+            </div>
+          )}
+
           {modifyData.modificationType === "level" && (
             <div className="form-group">
-              <label className="text-sm font-medium">Novo Nível de Dificuldade</label>
+              <label className="text-sm font-medium">Desired Level</label>
               <Select
                 value={modifyData.levelChange}
-                onValueChange={(value: "easy" | "medium" | "hard") => 
+                onValueChange={(value: "easy" | "medium" | "hard" | "") => 
                   setModifyData(prev => ({ ...prev, levelChange: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a dificuldade" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easy">Fácil</SelectItem>
-                  <SelectItem value="medium">Médio</SelectItem>
-                  <SelectItem value="hard">Difícil</SelectItem>
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -205,18 +209,18 @@ const QuestionModifier = () => {
 
           {modifyData.modificationType === "direct" && (
             <div className="form-group">
-              <label className="text-sm font-medium">Mudança Direta de Nível</label>
+              <label className="text-sm font-medium">Difficulty Change</label>
               <Select
                 value={modifyData.directLevelChange}
-                onValueChange={(value: "easier" | "harder") => 
+                onValueChange={(value: "easier" | "harder" | "") => 
                   setModifyData(prev => ({ ...prev, directLevelChange: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione a direção" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easier">Tornar mais fácil</SelectItem>
-                  <SelectItem value="harder">Tornar mais difícil</SelectItem>
+                  <SelectItem value="easier">Make Easier</SelectItem>
+                  <SelectItem value="harder">Make Harder</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -224,32 +228,20 @@ const QuestionModifier = () => {
 
           {modifyData.modificationType === "type" && (
             <div className="form-group">
-              <label className="text-sm font-medium">Novo Tipo de Questão</label>
+              <label className="text-sm font-medium">New Question Type</label>
               <Select
                 value={modifyData.typeChange}
-                onValueChange={(value: "multiple choice" | "assertion-reason") => 
+                onValueChange={(value: "multiple choice" | "assertion-reason" | "") => 
                   setModifyData(prev => ({ ...prev, typeChange: value }))}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione o tipo" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="multiple choice">Múltipla Escolha</SelectItem>
-                  <SelectItem value="assertion-reason">Asserção-Razão</SelectItem>
+                  <SelectItem value="multiple choice">Multiple Choice</SelectItem>
+                  <SelectItem value="assertion-reason">Assertion-Reason</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          )}
-
-          {modifyData.modificationType === "instruction" && (
-            <div className="form-group">
-              <label className="text-sm font-medium">Instruções para Modificação</label>
-              <Textarea
-                value={modifyData.instructionChange}
-                onChange={(e) => setModifyData(prev => ({ ...prev, instructionChange: e.target.value }))}
-                placeholder="Digite instruções para modificar a questão..."
-                className="min-h-[100px]"
-              />
             </div>
           )}
 
@@ -258,21 +250,14 @@ const QuestionModifier = () => {
             className="w-full"
             disabled={isProcessing}
           >
-            {isProcessing ? "Processando..." : "Modificar Questão"}
+            {isProcessing ? "Processing..." : "Modify Question"}
           </Button>
         </form>
       </Card>
 
       {modifiedQuestion && (
         <Card className="p-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Questão Modificada</h2>
-            {modifiedQuestion.difficulty && (
-              <span className={`text-sm px-2 py-1 rounded border ${getDifficultyColor(modifiedQuestion.difficulty)}`}>
-                {modifiedQuestion.difficulty.charAt(0).toUpperCase() + modifiedQuestion.difficulty.slice(1)}
-              </span>
-            )}
-          </div>
+          <h2 className="text-xl font-semibold">Questão Modificada</h2>
           <p>{modifiedQuestion.content}</p>
           <div className="space-y-2">
             {modifiedQuestion.options?.map((option: any, index: number) => (
@@ -294,9 +279,7 @@ const QuestionModifier = () => {
           </div>
           <div className="mt-4 p-4 bg-secondary/30 rounded">
             <p className="font-medium">Feedback da alternativa correta ({
-              modifiedQuestion.options?.findIndex((opt: any) => opt.correct) >= 0 
-                ? String.fromCharCode(65 + modifiedQuestion.options?.findIndex((opt: any) => opt.correct))
-                : 'N/A'
+              String.fromCharCode(65 + modifiedQuestion.options?.findIndex((opt: any) => opt.correct))
             }):</p>
             <p className="text-sm text-gray-600">
               {modifiedQuestion.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
