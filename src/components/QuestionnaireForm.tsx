@@ -160,7 +160,7 @@ const QuestionnaireForm = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
-              <label className="text-sm font-medium">Number of Questions</label>
+              <label className="text-sm font-medium">Número de Questões</label>
               <Input
                 type="number"
                 value={formData.numberOfQuestions}
@@ -171,7 +171,7 @@ const QuestionnaireForm = () => {
             </div>
 
             <div className="form-group">
-              <label className="text-sm font-medium">Alternatives per Question</label>
+              <label className="text-sm font-medium">Alternativas por Questão</label>
               <Input
                 type="number"
                 value={formData.numberOfAlternatives}
@@ -184,7 +184,7 @@ const QuestionnaireForm = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
-              <label className="text-sm font-medium">Question Type</label>
+              <label className="text-sm font-medium">Tipo de questão</label>
               <Select
                 value={formData.questionType}
                 onValueChange={(value: "multiple choice" | "assertion-reason") => 
@@ -194,14 +194,14 @@ const QuestionnaireForm = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="multiple choice">Multiple Choice</SelectItem>
-                  <SelectItem value="assertion-reason">Assertion-Reason</SelectItem>
+                  <SelectItem value="multiple choice">Múltipla escolha</SelectItem>
+                  <SelectItem value="assertion-reason">Asserção-razão</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="form-group">
-              <label className="text-sm font-medium">Difficulty</label>
+              <label className="text-sm font-medium">Dificuldade</label>
               <Select
                 value={formData.difficulty}
                 onValueChange={(value: "easy" | "medium" | "hard") => 
@@ -211,30 +211,19 @@ const QuestionnaireForm = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="easy">Easy</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="hard">Hard</SelectItem>
+                  <SelectItem value="easy">Fácil</SelectItem>
+                  <SelectItem value="medium">Médio</SelectItem>
+                  <SelectItem value="hard">Díficil</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
-
-          <div className="form-group">
-            <label className="text-sm font-medium">Instruções do Professor</label>
-            <Textarea
-              value={formData.professorInput}
-              onChange={(e) => setFormData(prev => ({ ...prev, professorInput: e.target.value }))}
-              placeholder="Digite instruções adicionais para a geração do questionário..."
-              className="min-h-[100px]"
-            />
-          </div>
-
           <Button
             type="submit"
             className="w-full"
             disabled={isConnecting}
           >
-            {isConnecting ? "Connecting..." : "Generate Questionnaire"}
+            {isConnecting ? "Gerando..." : "Gerar questionário"}
           </Button>
         </form>
       </Card>

@@ -258,7 +258,7 @@ const QuestionModifier = () => {
             className="w-full"
             disabled={isProcessing}
           >
-            {isProcessing ? "Processando..." : "Modificar Questão"}
+            {isProcessing ? "Modificando..." : "Modificar Questão"}
           </Button>
         </form>
       </Card>
