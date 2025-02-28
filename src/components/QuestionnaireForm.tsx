@@ -180,7 +180,7 @@ const QuestionnaireForm = () => {
                 value={formData.numberOfQuestions}
                 onChange={(e) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(e.target.value) }))}
                 min={1}
-                max={10}
+                max={30}
               />
             </div>
 
