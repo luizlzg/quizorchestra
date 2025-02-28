@@ -11,6 +11,20 @@ import { Textarea } from "@/components/ui/textarea";
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionnaireForm = () => {
+
+  const getDifficultyInPortuguese = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'Fácil';
+      case 'medium':
+        return 'Médio';
+      case 'hard':
+        return 'Difícil';
+      default:
+        return 'Médio';
+    }
+  };
+
   const { 
     selectedTheme, 
     setSelectedTheme, 
@@ -249,7 +263,7 @@ const QuestionnaireForm = () => {
                     ID: {question.questionId}
                   </span>
                   <span className={`text-sm px-2 py-1 rounded border ${getDifficultyColor(question.difficulty)}`}>
-                    {question.difficulty?.charAt(0).toUpperCase() + question.difficulty?.slice(1) || 'Média'}
+                  {getDifficultyInPortuguese(question.difficulty)}
                   </span>
                 </div>
               </div>

@@ -13,6 +13,20 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
+
+  const getDifficultyInPortuguese = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'easy':
+        return 'Fácil';
+      case 'medium':
+        return 'Médio';
+      case 'hard':
+        return 'Difícil';
+      default:
+        return 'Médio';
+    }
+  };
+
   const { updateQuestion, getQuestionById } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
@@ -269,7 +283,7 @@ const QuestionModifier = () => {
             <h2 className="text-xl font-semibold">Questão Modificada</h2>
             {modifiedQuestion.difficulty && (
               <span className={`text-sm px-2 py-1 rounded border ${getDifficultyColor(modifiedQuestion.difficulty)}`}>
-                {modifiedQuestion.difficulty.charAt(0).toUpperCase() + modifiedQuestion.difficulty.slice(1)}
+                {getDifficultyInPortuguese(modifiedQuestion.difficulty)}
               </span>
             )}
           </div>
