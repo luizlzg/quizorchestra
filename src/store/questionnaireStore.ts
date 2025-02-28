@@ -64,10 +64,9 @@ export const useQuestionnaireStore = create<QuestionnaireStore>()(
     }),
     {
       name: 'questionnaire-store',
-      // Apenas persiste as questões modificadas e o ID do questionário
+      // Apenas persiste as questões modificadas, não persistimos o ID do questionário
       partialize: (state) => ({
         modifiedQuestions: state.modifiedQuestions,
-        questionnaireId: state.questionnaireId,
       }),
     }
   )

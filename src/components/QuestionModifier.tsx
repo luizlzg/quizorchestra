@@ -13,11 +13,11 @@ const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 type ModificationType = "instruction" | "level" | "direct" | "type";
 
 const QuestionModifier = () => {
-  const { questionnaireId, updateQuestion, getQuestionById } = useQuestionnaireStore();
+  const { updateQuestion, getQuestionById } = useQuestionnaireStore();
   
   const [modifyData, setModifyData] = useState({
     questionId: "",
-    questionnaireId: questionnaireId || "",
+    questionnaireId: "", // Agora começará vazio
     modificationType: "instruction" as ModificationType,
     levelChange: "" as "easy" | "medium" | "hard" | "",
     instructionChange: "",
@@ -258,7 +258,7 @@ const QuestionModifier = () => {
             className="w-full"
             disabled={isProcessing}
           >
-            {isProcessing ? "Modificando..." : "Modificar Questão"}
+            {isProcessing ? "Processando..." : "Modificar Questão"}
           </Button>
         </form>
       </Card>
