@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useQuestionnaireStore, themes } from "@/store/questionnaireStore";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -50,7 +50,11 @@ const QuestionnaireForm = () => {
     e.preventDefault();
     
     if (!selectedTheme) {
-      toast.error("Por favor, selecione um tema");
+      toast({
+        title: "Erro",
+        description: "Por favor, selecione um tema",
+        variant: "error",
+      });
       return;
     }
 
@@ -87,7 +91,10 @@ const QuestionnaireForm = () => {
         };
 
         ws.send(JSON.stringify(body));
-        toast.success("WebSocket conectado com sucesso!");
+        toast({
+          title: "Sucesso",
+          description: "WebSocket conectado com sucesso!",
+        });
       };
 
       ws.onmessage = (event) => {
@@ -103,19 +110,30 @@ const QuestionnaireForm = () => {
             setQuestions(updated);
             return updated;
           });
-          toast.info(`Questão ${localQuestions.length + 1} gerada`);
+          toast({
+            title: "Questão gerada",
+            description: `Questão ${localQuestions.length + 1} gerada`,
+          });
         } else if (response.action === "questionnaireDetails") {
           setQuestionnaireDetails(response.questionnaireDetails);
           setQuestionnaireId(response.questionnaireDetails.questionnaireId);
-          toast.info("Detalhes do questionário recebidos");
+          toast({
+            title: "Informação",
+            description: "Detalhes do questionário recebidos",
+          });
         } else if (response.action === "questionnaireGenerated") {
-          toast.success("Questionário completo gerado!");
+          toast({
+            title: "Sucesso",
+            description: "Questionário completo gerado!",
+          });
           setIsConnecting(false);
           ws.close();
         } else if (response.action === "error" || response.error) {
           console.error("WebSocket error:", response);
-          toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
-            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          toast({
+            title: "Erro",
+            description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
+            variant: "error",
           });
           setIsConnecting(false);
           ws.close();
@@ -124,8 +142,10 @@ const QuestionnaireForm = () => {
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
-          style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+        toast({
+          title: "Erro",
+          description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
+          variant: "error",
         });
         setIsConnecting(false);
       };
@@ -133,8 +153,10 @@ const QuestionnaireForm = () => {
       ws.onclose = (event) => {
         console.log("WebSocket closed:", event);
         if (event.code !== 1000 && isConnecting) { // 1000 is normal closure
-          toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
-            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          toast({
+            title: "Erro",
+            description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
+            variant: "error",
           });
         }
         setIsConnecting(false);
@@ -142,8 +164,10 @@ const QuestionnaireForm = () => {
 
     } catch (error) {
       console.error("Failed to connect to WebSocket:", error);
-      toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
-        style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+      toast({
+        title: "Erro",
+        description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
+        variant: "error",
       });
       setIsConnecting(false);
     }

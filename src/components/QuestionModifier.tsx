@@ -1,10 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import { useQuestionnaireStore } from "@/store/questionnaireStore";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
@@ -67,12 +68,20 @@ const QuestionModifier = () => {
     e.preventDefault();
     
     if (!modifyData.questionId) {
-      toast.error("ID da questão não encontrado");
+      toast({
+        title: "Erro",
+        description: "ID da questão não encontrado",
+        variant: "error",
+      });
       return;
     }
     
     if (!modifyData.questionnaireId) {
-      toast.error("ID do questionário não encontrado");
+      toast({
+        title: "Erro",
+        description: "ID do questionário não encontrado",
+        variant: "error",
+      });
       return;
     }
     
@@ -116,7 +125,10 @@ const QuestionModifier = () => {
 
         console.log("Sending request:", body);
         ws.send(JSON.stringify(body));
-        toast.success("WebSocket conectado com sucesso!");
+        toast({
+          title: "Sucesso",
+          description: "WebSocket conectado com sucesso!",
+        });
       };
 
       ws.onmessage = (event) => {
@@ -128,13 +140,18 @@ const QuestionModifier = () => {
           console.log("Nova questão:", newQuestion);
           updateQuestion(newQuestion);
           setModifiedQuestion(newQuestion);
-          toast.success("Questão modificada com sucesso!");
+          toast({
+            title: "Sucesso",
+            description: "Questão modificada com sucesso!",
+          });
           setIsProcessing(false);
           ws.close();
         } else if (response.action === "error" || response.error) {
           console.error("WebSocket error:", response);
-          toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
-            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          toast({
+            title: "Erro",
+            description: "Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.",
+            variant: "error",
           });
           setIsProcessing(false);
           ws.close();
@@ -143,8 +160,10 @@ const QuestionModifier = () => {
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
-          style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+        toast({
+          title: "Erro",
+          description: "Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.",
+          variant: "error",
         });
         setIsProcessing(false);
       };
@@ -152,8 +171,10 @@ const QuestionModifier = () => {
       ws.onclose = (event) => {
         console.log("WebSocket closed:", event);
         if (event.code !== 1000 && isProcessing) { // 1000 is normal closure
-          toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
-            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          toast({
+            title: "Erro",
+            description: "Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.",
+            variant: "error",
           });
         }
         setIsProcessing(false);
@@ -161,8 +182,10 @@ const QuestionModifier = () => {
 
     } catch (error) {
       console.error("Failed to connect to WebSocket:", error);
-      toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
-        style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+      toast({
+        title: "Erro",
+        description: "Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.",
+        variant: "error",
       });
       setIsProcessing(false);
     }
