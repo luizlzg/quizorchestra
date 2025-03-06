@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +41,6 @@ const QuestionModifier = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [modifiedQuestion, setModifiedQuestion] = useState<any>(null);
 
-  // Carrega a questão modificada quando o ID é inserido
   useEffect(() => {
     if (modifyData.questionId) {
       const question = getQuestionById(modifyData.questionId);
@@ -52,7 +50,6 @@ const QuestionModifier = () => {
     }
   }, [modifyData.questionId, getQuestionById]);
 
-  // Função para obter a cor de acordo com a dificuldade
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
@@ -134,22 +131,39 @@ const QuestionModifier = () => {
           toast.success("Questão modificada com sucesso!");
           setIsProcessing(false);
           ws.close();
+        } else if (response.action === "error" || response.error) {
+          console.error("WebSocket error:", response);
+          toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
+            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          });
+          setIsProcessing(false);
+          ws.close();
         }
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Erro na conexão WebSocket");
+        toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
+          style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+        });
         setIsProcessing(false);
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log("WebSocket closed:", event);
+        if (event.code !== 1000 && isProcessing) { // 1000 is normal closure
+          toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
+            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          });
+        }
         setIsProcessing(false);
-        toast.info("Conexão WebSocket fechada");
       };
 
     } catch (error) {
-      toast.error("Falha ao conectar ao WebSocket");
+      console.error("Failed to connect to WebSocket:", error);
+      toast.error("Aconteceu um erro durante a modificação. Revise as entradas passadas e tente novamente.", {
+        style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+      });
       setIsProcessing(false);
     }
   };

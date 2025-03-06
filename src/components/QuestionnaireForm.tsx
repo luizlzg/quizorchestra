@@ -112,22 +112,39 @@ const QuestionnaireForm = () => {
           toast.success("Questionário completo gerado!");
           setIsConnecting(false);
           ws.close();
+        } else if (response.action === "error" || response.error) {
+          console.error("WebSocket error:", response);
+          toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
+            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          });
+          setIsConnecting(false);
+          ws.close();
         }
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast.error("Erro na conexão WebSocket");
+        toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
+          style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+        });
         setIsConnecting(false);
       };
 
-      ws.onclose = () => {
+      ws.onclose = (event) => {
+        console.log("WebSocket closed:", event);
+        if (event.code !== 1000 && isConnecting) { // 1000 is normal closure
+          toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
+            style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+          });
+        }
         setIsConnecting(false);
-        toast.info("Conexão WebSocket fechada");
       };
 
     } catch (error) {
-      toast.error("Falha ao conectar ao WebSocket");
+      console.error("Failed to connect to WebSocket:", error);
+      toast.error("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.", {
+        style: { backgroundColor: "#fef2f2", color: "#ea384c", border: "1px solid #f87171" }
+      });
       setIsConnecting(false);
     }
   };
