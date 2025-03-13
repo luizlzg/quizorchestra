@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import QuestionFormCreationMethod from "./questionnaire/QuestionFormCreationMeth
 import QuestionFormOptions from "./questionnaire/QuestionFormOptions";
 import QuestionnaireError from "./questionnaire/QuestionnaireError";
 import QuestionnaireResult from "./questionnaire/QuestionnaireResult";
+import { toast } from "@/hooks/use-toast";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
@@ -55,12 +57,24 @@ const QuestionnaireForm = () => {
     setErrorMessage(null);
     
     if (creationMethod === "theme" && !selectedTheme) {
-      setErrorMessage("Por favor, selecione um tema");
+      const errorMsg = "Por favor, selecione um tema";
+      setErrorMessage(errorMsg);
+      toast({
+        title: "Erro",
+        description: errorMsg,
+        variant: "error",
+      });
       return;
     }
 
     if (creationMethod === "input" && !formData.customInput.trim()) {
-      setErrorMessage("Por favor, insira o conteúdo para o questionário");
+      const errorMsg = "Por favor, insira o conteúdo para o questionário";
+      setErrorMessage(errorMsg);
+      toast({
+        title: "Erro",
+        description: errorMsg,
+        variant: "error",
+      });
       return;
     }
 
@@ -75,6 +89,11 @@ const QuestionnaireForm = () => {
 
       ws.onopen = () => {
         console.log("WebSocket connected");
+        toast({
+          title: "Conexão estabelecida",
+          description: "Gerando questionário...",
+        });
+        
         const body = {
           action: "generateQuestionnaire",
           key: websocketKey,
@@ -111,6 +130,10 @@ const QuestionnaireForm = () => {
             console.log('Resposta:', response.partialResponse.response);
             const newQuestion = response.partialResponse.response;
             console.log('New question:', newQuestion);
+            toast({
+              title: "Questão gerada",
+              description: `Questão ${localQuestions.length + 1} gerada com sucesso`,
+            });
             setLocalQuestions(prev => {
               const updated = [...prev, newQuestion];
               setQuestions(updated);
@@ -119,19 +142,39 @@ const QuestionnaireForm = () => {
           } else if (response.action === "questionnaireDetails") {
             setQuestionnaireDetails(response.questionnaireDetails);
             setQuestionnaireId(response.questionnaireDetails.questionnaireId);
+            toast({
+              title: "Detalhes recebidos",
+              description: "Detalhes do questionário recebidos",
+            });
           } else if (response.action === "questionnaireGenerated") {
             console.log("Questionnaire generated successfully");
+            toast({
+              title: "Sucesso",
+              description: "Questionário gerado com sucesso!",
+            });
             setIsConnecting(false);
             ws.close();
           } else if (response.action === "error" || response.error) {
             console.error("WebSocket error response:", response);
-            setErrorMessage(response.message || "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.");
+            const errorMsg = response.message || "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.";
+            setErrorMessage(errorMsg);
+            toast({
+              title: "Erro",
+              description: errorMsg,
+              variant: "error",
+            });
             setIsConnecting(false);
             ws.close();
           }
         } catch (error) {
           console.error("Error parsing WebSocket response:", error);
-          setErrorMessage("Erro ao processar a resposta do servidor. Tente novamente.");
+          const errorMsg = "Erro ao processar a resposta do servidor. Tente novamente.";
+          setErrorMessage(errorMsg);
+          toast({
+            title: "Erro",
+            description: errorMsg,
+            variant: "error",
+          });
           setIsConnecting(false);
           ws.close();
         }
@@ -139,21 +182,39 @@ const QuestionnaireForm = () => {
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        setErrorMessage("Erro de conexão com o servidor. Tente novamente mais tarde.");
+        const errorMsg = "Erro de conexão com o servidor. Tente novamente mais tarde.";
+        setErrorMessage(errorMsg);
+        toast({
+          title: "Erro",
+          description: errorMsg,
+          variant: "error",
+        });
         setIsConnecting(false);
       };
 
       ws.onclose = (event) => {
         console.log("WebSocket closed:", event);
         if (event.code !== 1000 && isConnecting) { // 1000 is normal closure
-          setErrorMessage("A conexão foi encerrada inesperadamente. Tente novamente.");
+          const errorMsg = "A conexão foi encerrada inesperadamente. Tente novamente.";
+          setErrorMessage(errorMsg);
+          toast({
+            title: "Erro",
+            description: errorMsg,
+            variant: "error",
+          });
         }
         setIsConnecting(false);
       };
 
     } catch (error) {
       console.error("Failed to connect to WebSocket:", error);
-      setErrorMessage("Falha ao conectar com o servidor. Verifique sua conexão e tente novamente.");
+      const errorMsg = "Falha ao conectar com o servidor. Verifique sua conexão e tente novamente.";
+      setErrorMessage(errorMsg);
+      toast({
+        title: "Erro",
+        description: errorMsg,
+        variant: "error",
+      });
       setIsConnecting(false);
     }
   };
