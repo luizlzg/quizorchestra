@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useQuestionnaireStore, themes } from "@/store/questionnaireStore";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
@@ -41,15 +42,18 @@ const QuestionnaireForm = () => {
     questionType: "multiple choice" as "multiple choice" | "assertion-reason",
     difficulty: "medium" as "easy" | "medium" | "hard",
     professorInput: "",
+    customInput: "",
   });
 
   const [isConnecting, setIsConnecting] = useState(false);
   const [localQuestions, setLocalQuestions] = useState<any[]>([]);
+  const [creationMethod, setCreationMethod] = useState<"theme" | "input">("theme");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedTheme) {
+    if (creationMethod === "theme" && !selectedTheme) {
       toast({
         title: "Erro",
         description: "Por favor, selecione um tema",
@@ -58,9 +62,19 @@ const QuestionnaireForm = () => {
       return;
     }
 
+    if (creationMethod === "input" && !formData.customInput.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, insira o conteúdo para o questionário",
+        variant: "error",
+      });
+      return;
+    }
+
     setIsConnecting(true);
     setQuestionnaireDetails(null);
     setLocalQuestions([]);
+    setErrorMessage(null);
     
     try {
       const websocketKey = `key-${Date.now()}`;
@@ -76,13 +90,14 @@ const QuestionnaireForm = () => {
           difficulty: formData.difficulty,
           questionType: formData.questionType,
           professorInput: formData.professorInput,
-          modulesList: [
+          customInput: creationMethod === "input" ? formData.customInput : undefined,
+          modulesList: creationMethod === "theme" ? [
             {
-              moduleName: selectedTheme.moduleName,
-              contentCode: selectedTheme.contentCode,
+              moduleName: selectedTheme?.moduleName,
+              contentCode: selectedTheme?.contentCode,
             }
-          ],
-          contextId: selectedTheme.contextId,
+          ] : [],
+          contextId: creationMethod === "theme" ? selectedTheme?.contextId : "0",
           applicationId: 1,
           tenantId: 1,
           institutionId: 1,
@@ -130,11 +145,7 @@ const QuestionnaireForm = () => {
           ws.close();
         } else if (response.action === "error" || response.error) {
           console.error("WebSocket error:", response);
-          toast({
-            title: "Erro",
-            description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
-            variant: "error",
-          });
+          setErrorMessage("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.");
           setIsConnecting(false);
           ws.close();
         }
@@ -142,33 +153,21 @@ const QuestionnaireForm = () => {
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
-        toast({
-          title: "Erro",
-          description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
-          variant: "error",
-        });
+        setErrorMessage("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.");
         setIsConnecting(false);
       };
 
       ws.onclose = (event) => {
         console.log("WebSocket closed:", event);
         if (event.code !== 1000 && isConnecting) { // 1000 is normal closure
-          toast({
-            title: "Erro",
-            description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
-            variant: "error",
-          });
+          setErrorMessage("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.");
         }
         setIsConnecting(false);
       };
 
     } catch (error) {
       console.error("Failed to connect to WebSocket:", error);
-      toast({
-        title: "Erro",
-        description: "Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.",
-        variant: "error",
-      });
+      setErrorMessage("Aconteceu um erro durante a geração. Revise as entradas passadas e tente novamente.");
       setIsConnecting(false);
     }
   };
@@ -190,28 +189,79 @@ const QuestionnaireForm = () => {
   // Usar as questões do estado global para renderização
   const questionsToDisplay = questions;
 
+  const closeErrorMessage = () => {
+    setErrorMessage(null);
+  };
+
   return (
     <div className="space-y-8">
       <Card className="questionnaire-card">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="form-group">
-            <label className="text-sm font-medium">Tema do Questionário</label>
+            <label className="text-sm font-medium mb-2">Método de criação</label>
             <Select
-              value={selectedTheme?.contentCode || ""}
-              onValueChange={(value) => setSelectedTheme(themes.find(t => t.contentCode === value) || null)}
+              value={creationMethod}
+              onValueChange={(value: "theme" | "input") => setCreationMethod(value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selecione um tema" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {themes.map((theme) => (
-                  <SelectItem key={theme.contentCode} value={theme.contentCode}>
-                    {theme.moduleName}
-                  </SelectItem>
-                ))}
+                <SelectItem value="theme">Via tema</SelectItem>
+                <SelectItem value="input">Via texto</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {errorMessage && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+              <span className="block sm:inline">{errorMessage}</span>
+              <span 
+                className="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" 
+                onClick={closeErrorMessage}
+              >
+                <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                  <title>Close</title>
+                  <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
+                </svg>
+              </span>
+            </div>
+          )}
+
+          <Tabs value={creationMethod} onValueChange={(value: "theme" | "input") => setCreationMethod(value)}>
+            <TabsContent value="theme">
+              <div className="form-group">
+                <label className="text-sm font-medium">Tema do Questionário</label>
+                <Select
+                  value={selectedTheme?.contentCode || ""}
+                  onValueChange={(value) => setSelectedTheme(themes.find(t => t.contentCode === value) || null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um tema" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {themes.map((theme) => (
+                      <SelectItem key={theme.contentCode} value={theme.contentCode}>
+                        {theme.moduleName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="input">
+              <div className="form-group">
+                <label className="text-sm font-medium">Conteúdo do Questionário</label>
+                <Textarea 
+                  placeholder="Insira o conteúdo para gerar o questionário"
+                  value={formData.customInput}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customInput: e.target.value }))}
+                  className="min-h-[120px]"
+                />
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div className="form-group">
@@ -273,6 +323,16 @@ const QuestionnaireForm = () => {
               </Select>
             </div>
           </div>
+
+          <div className="form-group">
+            <label className="text-sm font-medium">Instruções adicionais (opcional)</label>
+            <Textarea 
+              placeholder="Instruções adicionais para a geração do questionário"
+              value={formData.professorInput}
+              onChange={(e) => setFormData(prev => ({ ...prev, professorInput: e.target.value }))}
+            />
+          </div>
+          
           <Button
             type="submit"
             className="w-full"
