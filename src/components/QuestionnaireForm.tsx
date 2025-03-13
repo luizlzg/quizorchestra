@@ -1,18 +1,17 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useQuestionnaireStore, themes } from "@/store/questionnaireStore";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import QuestionFormCreationMethod from "./questionnaire/QuestionFormCreationMethod";
+import QuestionFormOptions from "./questionnaire/QuestionFormOptions";
+import QuestionnaireError from "./questionnaire/QuestionnaireError";
+import QuestionnaireResult from "./questionnaire/QuestionnaireResult";
 
 const WEBSOCKET_URL = "wss://w7ocv6deoj.execute-api.us-east-1.amazonaws.com/v1";
 
 const QuestionnaireForm = () => {
-
   const getDifficultyInPortuguese = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
@@ -41,7 +40,6 @@ const QuestionnaireForm = () => {
     numberOfAlternatives: 5,
     questionType: "multiple choice" as "multiple choice" | "assertion-reason",
     difficulty: "medium" as "easy" | "medium" | "hard",
-    professorInput: "",
     customInput: "",
   });
 
@@ -49,6 +47,10 @@ const QuestionnaireForm = () => {
   const [localQuestions, setLocalQuestions] = useState<any[]>([]);
   const [creationMethod, setCreationMethod] = useState<"theme" | "input">("theme");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const handleFormDataChange = (key: keyof typeof formData, value: any) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +91,7 @@ const QuestionnaireForm = () => {
           numberOfAlternatives: formData.numberOfAlternatives,
           difficulty: formData.difficulty,
           questionType: formData.questionType,
-          professorInput: formData.professorInput,
+          professorInput: "",
           customInput: creationMethod === "input" ? formData.customInput : undefined,
           modulesList: creationMethod === "theme" ? [
             {
@@ -97,7 +99,7 @@ const QuestionnaireForm = () => {
               contentCode: selectedTheme?.contentCode,
             }
           ] : [],
-          contextId: creationMethod === "theme" ? selectedTheme?.contextId : "0",
+          contextId: creationMethod === "theme" ? selectedTheme?.contextId : "37960",
           applicationId: 1,
           tenantId: 1,
           institutionId: 1,
@@ -186,152 +188,34 @@ const QuestionnaireForm = () => {
     }
   };
 
-  // Usar as questões do estado global para renderização
-  const questionsToDisplay = questions;
-
   const closeErrorMessage = () => {
     setErrorMessage(null);
   };
 
+  const selectedThemeCode = selectedTheme?.contentCode;
+  
   return (
     <div className="space-y-8">
-      <Card className="questionnaire-card">
+      <Card className="questionnaire-card p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="form-group">
-            <label className="text-sm font-medium mb-2">Método de criação</label>
-            <Select
-              value={creationMethod}
-              onValueChange={(value: "theme" | "input") => setCreationMethod(value)}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="theme">Via tema</SelectItem>
-                <SelectItem value="input">Via texto</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <QuestionnaireError errorMessage={errorMessage} onClose={closeErrorMessage} />
+          
+          <QuestionFormCreationMethod
+            creationMethod={creationMethod}
+            selectedThemeCode={selectedThemeCode}
+            customInput={formData.customInput}
+            setCreationMethod={setCreationMethod}
+            setSelectedTheme={(themeCode) => {
+              const theme = themes.find(t => t.contentCode === themeCode);
+              setSelectedTheme(theme || null);
+            }}
+            setCustomInput={(value) => handleFormDataChange("customInput", value)}
+          />
 
-          {errorMessage && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-              <span className="block sm:inline">{errorMessage}</span>
-              <span 
-                className="absolute top-0 bottom-0 right-0 px-4 py-3 cursor-pointer" 
-                onClick={closeErrorMessage}
-              >
-                <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <title>Close</title>
-                  <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/>
-                </svg>
-              </span>
-            </div>
-          )}
-
-          <Tabs value={creationMethod} onValueChange={(value: "theme" | "input") => setCreationMethod(value)}>
-            <TabsContent value="theme">
-              <div className="form-group">
-                <label className="text-sm font-medium">Tema do Questionário</label>
-                <Select
-                  value={selectedTheme?.contentCode || ""}
-                  onValueChange={(value) => setSelectedTheme(themes.find(t => t.contentCode === value) || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um tema" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {themes.map((theme) => (
-                      <SelectItem key={theme.contentCode} value={theme.contentCode}>
-                        {theme.moduleName}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="input">
-              <div className="form-group">
-                <label className="text-sm font-medium">Conteúdo do Questionário</label>
-                <Textarea 
-                  placeholder="Insira o conteúdo para gerar o questionário"
-                  value={formData.customInput}
-                  onChange={(e) => setFormData(prev => ({ ...prev, customInput: e.target.value }))}
-                  className="min-h-[120px]"
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="form-group">
-              <label className="text-sm font-medium">Número de Questões</label>
-              <Input
-                type="number"
-                value={formData.numberOfQuestions}
-                onChange={(e) => setFormData(prev => ({ ...prev, numberOfQuestions: parseInt(e.target.value) }))}
-                min={1}
-                max={30}
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="text-sm font-medium">Alternativas por Questão</label>
-              <Input
-                type="number"
-                value={formData.numberOfAlternatives}
-                onChange={(e) => setFormData(prev => ({ ...prev, numberOfAlternatives: parseInt(e.target.value) }))}
-                min={2}
-                max={6}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="form-group">
-              <label className="text-sm font-medium">Tipo de questão</label>
-              <Select
-                value={formData.questionType}
-                onValueChange={(value: "multiple choice" | "assertion-reason") => 
-                  setFormData(prev => ({ ...prev, questionType: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="multiple choice">Múltipla escolha</SelectItem>
-                  <SelectItem value="assertion-reason">Asserção-razão</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="form-group">
-              <label className="text-sm font-medium">Dificuldade</label>
-              <Select
-                value={formData.difficulty}
-                onValueChange={(value: "easy" | "medium" | "hard") => 
-                  setFormData(prev => ({ ...prev, difficulty: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="easy">Fácil</SelectItem>
-                  <SelectItem value="medium">Médio</SelectItem>
-                  <SelectItem value="hard">Díficil</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label className="text-sm font-medium">Instruções adicionais (opcional)</label>
-            <Textarea 
-              placeholder="Instruções adicionais para a geração do questionário"
-              value={formData.professorInput}
-              onChange={(e) => setFormData(prev => ({ ...prev, professorInput: e.target.value }))}
-            />
-          </div>
+          <QuestionFormOptions 
+            formData={formData} 
+            onChange={handleFormDataChange} 
+          />
           
           <Button
             type="submit"
@@ -343,64 +227,12 @@ const QuestionnaireForm = () => {
         </form>
       </Card>
 
-      {questionnaireDetails && (
-        <Card className="p-6 space-y-4">
-          <h2 className="text-xl font-semibold">Questionário Gerado</h2>
-          <div className="space-y-2">
-            <p className="font-medium">ID do Questionário: {questionnaireDetails.questionnaireId}</p>
-            <p className="text-gray-700">{questionnaireDetails.questionnaireStatement}</p>
-          </div>
-        </Card>
-      )}
-
-      {questionsToDisplay.length > 0 && (
-        <div className="space-y-6">
-          {questionsToDisplay.map((question, index) => (
-            <Card key={question.questionId || index} className="p-6 space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium">Questão {index + 1}</h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground bg-secondary/30 px-2 py-1 rounded">
-                    ID: {question.questionId}
-                  </span>
-                  <span className={`text-sm px-2 py-1 rounded border ${getDifficultyColor(question.difficulty)}`}>
-                  {getDifficultyInPortuguese(question.difficulty)}
-                  </span>
-                </div>
-              </div>
-              <p>{question.content}</p>
-              <div className="space-y-2">
-                {question.options?.map((option: any, optIndex: number) => (
-                  <div 
-                    key={optIndex} 
-                    className={`flex items-start gap-2 p-2 rounded ${
-                      option.correct ? 'bg-green-100 dark:bg-green-900/20' : 'bg-secondary/50'
-                    }`}
-                  >
-                    <div className="w-6">
-                      {String.fromCharCode(65 + optIndex)}
-                      {option.correct && (
-                        <span className="ml-1 text-green-600 dark:text-green-400">✓</span>
-                      )}
-                    </div>
-                    <p>{option.text}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-4 p-4 bg-secondary/30 rounded">
-                <p className="font-medium">Feedback da alternativa correta ({
-                  question.options?.findIndex((opt: any) => opt.correct) >= 0 
-                    ? String.fromCharCode(65 + question.options?.findIndex((opt: any) => opt.correct))
-                    : 'N/A'
-                }):</p>
-                <p className="text-sm text-gray-600">
-                  {question.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
-                </p>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <QuestionnaireResult 
+        questionnaireDetails={questionnaireDetails}
+        questions={questions}
+        getDifficultyInPortuguese={getDifficultyInPortuguese}
+        getDifficultyColor={getDifficultyColor}
+      />
     </div>
   );
 };
