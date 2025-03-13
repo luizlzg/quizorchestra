@@ -83,8 +83,7 @@ const QuestionnaireForm = () => {
           numberOfAlternatives: formData.numberOfAlternatives,
           difficulty: formData.difficulty,
           questionType: formData.questionType,
-          professorInput: "",
-          customInput: creationMethod === "input" ? formData.customInput : undefined,
+          professorInput: creationMethod === "input" ? formData.customInput : "",
           modulesList: creationMethod === "theme" ? [
             {
               moduleName: selectedTheme?.moduleName,
