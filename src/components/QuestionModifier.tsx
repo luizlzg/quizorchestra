@@ -343,15 +343,19 @@ const QuestionModifier = () => {
               </div>
             ))}
           </div>
-          <div className="mt-4 p-4 bg-secondary/30 rounded">
-            <p className="font-medium">Feedback da alternativa correta ({
-              modifiedQuestion.options?.findIndex((opt: any) => opt.correct) >= 0 
-                ? String.fromCharCode(65 + modifiedQuestion.options?.findIndex((opt: any) => opt.correct))
-                : 'N/A'
-            }):</p>
-            <p className="text-sm text-gray-600">
-              {modifiedQuestion.options?.find((opt: any) => opt.correct)?.feedback || "Feedback não disponível"}
-            </p>
+          <div className="mt-4 space-y-4">
+            {modifiedQuestion.options?.map((option: any, optIndex: number) => (
+              <div key={optIndex} className={`p-4 rounded ${
+                option.correct ? 'bg-green-100 dark:bg-green-900/20' : 'bg-secondary/30'
+              }`}>
+                <p className="font-medium">Feedback da alternativa {String.fromCharCode(65 + optIndex)}
+                  {option.correct && <span className="ml-1 text-green-600 dark:text-green-400">(Correta)</span>}:
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {option.feedback || "Feedback não disponível"}
+                </p>
+              </div>
+            ))}
           </div>
         </Card>
       )}
