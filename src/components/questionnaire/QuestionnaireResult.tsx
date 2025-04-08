@@ -16,6 +16,19 @@ const QuestionnaireResult = ({
 }: QuestionnaireResultProps) => {
   if (!questionnaireDetails && questions.length === 0) return null;
 
+  // Function to format assertion-reason questions
+  const formatContent = (content: string, questionType: string) => {
+    if (questionType?.toLowerCase() !== 'assertion-reason') {
+      return content;
+    }
+    
+    // Format assertion-reason questions with appropriate line breaks
+    return content.replace(
+      /(.*?)(I\.\s.*?)\s(PORQUE)\s(II\.\s.*?)(\sA\srespeito)/i,
+      '$1\n\n$2\n\n$3\n\n$4\n\n$5'
+    );
+  };
+
   return (
     <div className="space-y-6">
       {questionnaireDetails && (
@@ -43,7 +56,9 @@ const QuestionnaireResult = ({
                   </span>
                 </div>
               </div>
-              <p>{question.content}</p>
+              <div className="whitespace-pre-line">
+                {formatContent(question.content, question.questionType)}
+              </div>
               <div className="space-y-2">
                 {question.options?.map((option: any, optIndex: number) => (
                   <div 
@@ -62,20 +77,14 @@ const QuestionnaireResult = ({
                   </div>
                 ))}
               </div>
-              <div className="mt-4 space-y-4">
-                {question.options?.map((option: any, optIndex: number) => (
-                  <div key={optIndex} className={`p-4 rounded ${
-                    option.correct ? 'bg-green-100 dark:bg-green-900/20' : 'bg-secondary/30'
-                  }`}>
-                    <p className="font-medium">Feedback da alternativa {String.fromCharCode(65 + optIndex)}
-                      {option.correct && <span className="ml-1 text-green-600 dark:text-green-400">(Correta)</span>}:
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {option.feedback || "Feedback não disponível"}
-                    </p>
-                  </div>
-                ))}
-              </div>
+              {question.feedback && (
+                <div className="mt-4 p-4 bg-secondary/30 rounded">
+                  <p className="font-medium">Feedback:</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {question.feedback}
+                  </p>
+                </div>
+              )}
             </Card>
           ))}
         </div>

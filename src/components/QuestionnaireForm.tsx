@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -47,6 +46,7 @@ const QuestionnaireForm = () => {
   const [localQuestions, setLocalQuestions] = useState<any[]>([]);
   const [creationMethod, setCreationMethod] = useState<"theme" | "input">("theme");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedThemes, setSelectedThemes] = useState<string[]>([]);
 
   const handleFormDataChange = (key: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -56,8 +56,8 @@ const QuestionnaireForm = () => {
     e.preventDefault();
     setErrorMessage(null);
     
-    if (creationMethod === "theme" && !selectedTheme) {
-      const errorMsg = "Por favor, selecione um tema";
+    if (creationMethod === "theme" && selectedThemes.length === 0) {
+      const errorMsg = "Por favor, selecione pelo menos um tema";
       setErrorMessage(errorMsg);
       toast({
         title: "Erro",
@@ -94,6 +94,20 @@ const QuestionnaireForm = () => {
           description: "Gerando questionário...",
         });
         
+        const modulesList = creationMethod === "theme" 
+          ? selectedThemes.map(themeCode => {
+              const theme = themes.find(t => t.contentCode === themeCode);
+              return {
+                moduleName: theme?.moduleName,
+                contentCode: theme?.contentCode,
+              };
+            })
+          : [];
+          
+        const contextId = creationMethod === "theme" && selectedThemes.length > 0
+          ? themes.find(t => t.contentCode === selectedThemes[0])?.contextId || "37960"
+          : "37960";
+
         const body = {
           action: "generateQuestionnaire",
           key: websocketKey,
@@ -103,13 +117,8 @@ const QuestionnaireForm = () => {
           difficulty: formData.difficulty,
           questionType: formData.questionType,
           professorInput: creationMethod === "input" ? formData.customInput : "",
-          modulesList: creationMethod === "theme" ? [
-            {
-              moduleName: selectedTheme?.moduleName,
-              contentCode: selectedTheme?.contentCode,
-            }
-          ] : [],
-          contextId: creationMethod === "theme" ? selectedTheme?.contextId : "37960",
+          modulesList: modulesList,
+          contextId: contextId,
           applicationId: 1,
           tenantId: 1,
           institutionId: 1,
@@ -219,7 +228,6 @@ const QuestionnaireForm = () => {
     }
   };
 
-  // Função para obter a cor de acordo com a dificuldade
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy':
@@ -236,8 +244,6 @@ const QuestionnaireForm = () => {
   const closeErrorMessage = () => {
     setErrorMessage(null);
   };
-
-  const selectedThemeCode = selectedTheme?.contentCode;
   
   return (
     <div className="space-y-8">
@@ -247,13 +253,10 @@ const QuestionnaireForm = () => {
           
           <QuestionFormCreationMethod
             creationMethod={creationMethod}
-            selectedThemeCode={selectedThemeCode}
+            selectedThemes={selectedThemes}
             customInput={formData.customInput}
             setCreationMethod={setCreationMethod}
-            setSelectedTheme={(themeCode) => {
-              const theme = themes.find(t => t.contentCode === themeCode);
-              setSelectedTheme(theme || null);
-            }}
+            setSelectedThemes={setSelectedThemes}
             setCustomInput={(value) => handleFormDataChange("customInput", value)}
           />
 
